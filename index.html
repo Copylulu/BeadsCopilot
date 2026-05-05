@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beads Copilot | AI 拼豆创作助手</title>
+  <style>
+    :root {
+      --bg: #fffaf3;
+      --ink: #1d1b20;
+      --muted: #6f6672;
+      --card: rgba(255, 255, 255, 0.72);
+      --line: rgba(29, 27, 32, 0.1);
+      --brand: #ff6b6b;
+      --brand-2: #20c7b5;
+      --brand-3: #7b61ff;
+      --warm: #ffd166;
+      --shadow: 0 24px 70px rgba(80, 51, 120, 0.16);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(255, 209, 102, 0.35), transparent 30%),
+        radial-gradient(circle at 88% 12%, rgba(123, 97, 255, 0.2), transparent 28%),
+        radial-gradient(circle at 68% 78%, rgba(32, 199, 181, 0.18), transparent 32%),
+        var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.22;
+      background-image: linear-gradient(rgba(29, 27, 32, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 27, 32, 0.04) 1px, transparent 1px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+      z-index: -1;
+    }
+
+    .nav {
+      width: min(1180px, calc(100% - 36px));
+      margin: 18px auto 0;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      backdrop-filter: blur(18px);
+      position: sticky;
+      top: 14px;
+      z-index: 10;
+      box-shadow: 0 12px 30px rgba(80, 51, 120, 0.08);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+      letter-spacing: -0.04em;
+    }
+
+    .logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding: 5px;
+      background: #211d26;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+    }
+
+    .logo i { border-radius: 50%; display: block; }
+    .logo i:nth-child(1) { background: #ff6b6b; }
+    .logo i:nth-child(2) { background: #ffd166; }
+    .logo i:nth-child(3) { background: #20c7b5; }
+    .logo i:nth-child(4) { background: #7b61ff; }
+    .logo i:nth-child(5) { background: #ffffff; }
+    .logo i:nth-child(6) { background: #ff9f43; }
+    .logo i:nth-child(7) { background: #2aded3; }
+    .logo i:nth-child(8) { background: #f693bf; }
+    .logo i:nth-child(9) { background: #010101; }
+
+    .nav-links {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a:hover { color: var(--ink); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(29, 27, 32, 0.1);
+      background: #211d26;
+      color: white;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 18px 34px rgba(29, 27, 32, 0.18);
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 24px 44px rgba(29, 27, 32, 0.22); }
+    .btn.ghost { background: rgba(255,255,255,.72); color: var(--ink); box-shadow: none; }
+
+    .hero {
+      width: min(1180px, calc(100% - 36px));
+      margin: 70px auto 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr);
+      gap: 42px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .68);
+      color: #7a4b00;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-2);
+      box-shadow: 0 0 0 6px rgba(32, 199, 181, 0.16);
+    }
+
+    h1 {
+      margin: 20px 0 18px;
+      font-size: clamp(48px, 7vw, 92px);
+      line-height: .92;
+      letter-spacing: -0.075em;
+    }
+
+    .gradient-text {
+      background: linear-gradient(100deg, var(--brand), var(--brand-3) 46%, var(--brand-2));
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      max-width: 680px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .metrics {
+      margin-top: 34px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.6);
+    }
+
+    .metric b {
+      display: block;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stage {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 36px;
+      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.46));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      padding: 24px;
+      min-height: 560px;
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -80px;
+      top: -100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(123,97,255,.28), transparent 70%);
+    }
+
+    .prompt-box {
+      position: relative;
+      z-index: 1;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,.72);
+    }
+
+    .prompt-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .prompt-text {
+      font-size: 17px;
+      line-height: 1.55;
+      font-weight: 680;
+    }
+
+    .pixel-card {
+      position: relative;
+      z-index: 1;
+      margin-top: 18px;
+      padding: 20px;
+      border-radius: 30px;
+      background: #211d26;
+      color: white;
+      overflow: hidden;
+    }
+
+    .pixel-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -80px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255, 107, 107, .28);
+      filter: blur(4px);
+    }
+
+    .board {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(18, 1fr);
+      gap: 3px;
+      padding: 12px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.08);
+    }
+
+    .bead {
+      border-radius: 50%;
+      background: #36313d;
+      box-shadow: inset -2px -2px 0 rgba(0,0,0,.22), inset 2px 2px 0 rgba(255,255,255,.25);
+      transform: scale(.94);
+      animation: pop .7s ease both;
+    }
+
+    @keyframes pop {
+      from { transform: scale(.2); opacity: 0; }
+      to { transform: scale(.94); opacity: 1; }
+    }
+
+    .palette-row {
+      position: relative;
+      z-index: 1;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .chips { display: flex; gap: 7px; flex-wrap: wrap; }
+    .chip {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.85);
+      box-shadow: 0 5px 14px rgba(0,0,0,.18);
+    }
+
+    .section {
+      width: min(1180px, calc(100% - 36px));
+      margin: 96px auto 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      margin-bottom: 28px;
+    }
+
+    .section h2 {
+      margin: 0;
+      max-width: 720px;
+      font-size: clamp(34px, 4vw, 58px);
+      line-height: 1.02;
+      letter-spacing: -0.06em;
+    }
+
+    .section .sub {
+      margin: 12px 0 0;
+      max-width: 600px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 17px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      min-height: 230px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+
+    .feature-card:hover { transform: translateY(-6px); box-shadow: 0 18px 44px rgba(80, 51, 120, .12); }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(255,107,107,.18), rgba(123,97,255,.16));
+      font-size: 24px;
+    }
+
+    .feature-card h3 { margin: 0 0 10px; font-size: 21px; letter-spacing: -0.03em; }
+    .feature-card p { margin: 0; color: var(--muted); line-height: 1.7; }
+
+    .demo {
+      display: grid;
+      grid-template-columns: .82fr 1.18fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .demo-panel, .canvas-panel {
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: rgba(255,255,255,.68);
+      box-shadow: 0 18px 54px rgba(80, 51, 120, .1);
+      overflow: hidden;
+    }
+
+    .demo-panel { padding: 24px; }
+
+    .demo-panel h3 { margin: 0 0 10px; font-size: 26px; letter-spacing: -0.04em; }
+    .demo-panel p { margin: 0 0 22px; color: var(--muted); line-height: 1.7; }
+
+    .sample-prompts { display: grid; gap: 10px; }
+    .sample-prompts button {
+      text-align: left;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.7);
+      border-radius: 18px;
+      padding: 14px 15px;
+      cursor: pointer;
+      color: var(--ink);
+      font: inherit;
+      line-height: 1.45;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .sample-prompts button:hover, .sample-prompts button.active {
+      transform: translateX(4px);
+      border-color: rgba(255,107,107,.35);
+      background: rgba(255,255,255,.95);
+    }
+
+    .canvas-panel { padding: 24px; background: #211d26; color: white; }
+
+    .canvas-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      align-items: center;
+    }
+
+    .mini-dots { display: flex; gap: 6px; }
+    .mini-dots i { width: 10px; height: 10px; border-radius: 50%; display: block; background: rgba(255,255,255,.3); }
+    .mini-dots i:nth-child(1) { background: #ff6b6b; }
+    .mini-dots i:nth-child(2) { background: #ffd166; }
+    .mini-dots i:nth-child(3) { background: #20c7b5; }
+
+    .canvas-title { color: rgba(255,255,255,.72); font-size: 13px; }
+
+    .large-board {
+      display: grid;
+      grid-template-columns: repeat(22, 1fr);
+      gap: 4px;
+      padding: 18px;
+      border-radius: 28px;
+      background: rgba(255,255,255,.08);
+      min-height: 430px;
+    }
+
+    .large-board .bead { min-width: 8px; min-height: 8px; }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      padding: 24px;
+      min-height: 250px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.68);
+      overflow: hidden;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: "0" counter(step);
+      display: inline-grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      background: #211d26;
+      color: white;
+      font-weight: 850;
+      margin-bottom: 24px;
+    }
+
+    .step h3 { margin: 0 0 10px; font-size: 22px; letter-spacing: -0.03em; }
+    .step p { margin: 0; color: var(--muted); line-height: 1.7; }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 12px;
+    }
+
+    .swatch {
+      min-height: 120px;
+      border-radius: 24px;
+      border: 1px solid rgba(29,27,32,.08);
+      padding: 12px;
+      display: flex;
+      align-items: end;
+      color: white;
+      font-size: 12px;
+      font-weight: 760;
+      box-shadow: inset 0 -36px 50px rgba(0,0,0,.18);
+    }
+
+    .cta {
+      width: min(1180px, calc(100% - 36px));
+      margin: 96px auto 36px;
+      position: relative;
+      padding: clamp(34px, 6vw, 70px);
+      border-radius: 42px;
+      background: #211d26;
+      color: white;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .cta::before, .cta::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(2px);
+    }
+    .cta::before { width: 260px; height: 260px; background: rgba(255,107,107,.35); right: -70px; top: -80px; }
+    .cta::after { width: 220px; height: 220px; background: rgba(32,199,181,.25); left: 18%; bottom: -120px; }
+
+    .cta-content { position: relative; z-index: 1; max-width: 780px; }
+    .cta h2 { margin: 0 0 14px; font-size: clamp(36px, 5vw, 66px); line-height: 1; letter-spacing: -0.06em; }
+    .cta p { margin: 0; color: rgba(255,255,255,.72); font-size: 18px; line-height: 1.75; }
+    .cta .btn { margin-top: 26px; background: white; color: #211d26; }
+
+    footer {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto 36px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+
+    @media (max-width: 960px) {
+      .hero, .demo { grid-template-columns: 1fr; }
+      .stage { min-height: auto; }
+      .grid-4, .workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .swatches { grid-template-columns: repeat(3, 1fr); }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 620px) {
+      .hero { margin-top: 42px; }
+      .metrics { grid-template-columns: 1fr; }
+      .grid-4, .workflow { grid-template-columns: 1fr; }
+      .section-head { display: block; }
+      .large-board { gap: 3px; padding: 12px; min-height: 320px; }
+      .hero-actions .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+
+  <nav class="nav">
+    <a class="brand" href="#top">
+      <span class="logo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span>Beads Copilot</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">能力</a>
+      <a href="#demo">演示</a>
+      <a href="#workflow">流程</a>
+      <a href="#palette">色库</a>
+    </div>
+    <a class="btn ghost" href="#demo">看看效果</a>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div>
+        <span class="eyebrow"><span class="pulse"></span>AI 拼豆创作助手</span>
+        <h1>把灵感变成<br><span class="gradient-text">可制作的拼豆作品</span></h1>
+        <p class="lead">Beads Copilot 面向拼豆爱好者、手作设计师与创意教学场景，把照片、文字灵感或草图转化为像素图、推荐配色、材料清单与分步制作方案。</p>
+        <div class="hero-actions">
+          <a class="btn" href="#demo">启动创作演示</a>
+          <a class="btn ghost" href="#features">浏览核心能力</a>
+        </div>
+        <div class="metrics">
+          <div class="metric"><b>221</b><span>精选色库参考</span></div>
+          <div class="metric"><b>4 步</b><span>从想法到清单</span></div>
+          <div class="metric"><b>1 份</b><span>完整制作方案</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="prompt-box">
+          <div class="prompt-top"><span>Prompt</span><span>Creative Mode</span></div>
+          <div class="prompt-text">“做一个 32×32 的小狐狸头像，暖橙主色，带蓝绿色围巾，适合新手完成。”</div>
+        </div>
+        <div class="pixel-card">
+          <div class="board" id="heroBoard"></div>
+          <div class="palette-row">
+            <span>推荐配色</span>
+            <div class="chips">
+              <span class="chip" style="background:#F47E38"></span>
+              <span class="chip" style="background:#FEC993"></span>
+              <span class="chip" style="background:#21C5C4"></span>
+              <span class="chip" style="background:#1E334E"></span>
+              <span class="chip" style="background:#FFFFFF"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="section-head">
+        <div>
+          <h2>从灵感、配色到落地制作，一次串起来。</h2>
+          <p class="sub">不是只给一张好看的图，而是把创作拆成手作真正需要的细节：尺寸、色号、数量、分区、步骤与调整建议。</p>
+        </div>
+      </div>
+
+      <div class="grid-4">
+        <article class="feature-card">
+          <div class="icon">🎨</div>
+          <h3>智能配色</h3>
+          <p>根据主题、风格和成品尺寸推荐主色、辅助色与阴影色，让作品更有层次。</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon">🧩</div>
+          <h3>像素图生成</h3>
+          <p>把文字描述、参考图或草稿转成清晰网格，适合拼豆板直接参照。</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon">📋</div>
+          <h3>材料清单</h3>
+          <p>自动汇总色号与数量，按区域整理，减少反复数豆与临时补色。</p>
+        </article>
+        <article class="feature-card">
+          <div class="icon">✨</div>
+          <h3>创意微调</h3>
+          <p>支持更可爱、更复古、更简约、更适合新手等方向，一边试一边改。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="demo">
+      <div class="section-head">
+        <div>
+          <h2>像和懂拼豆的伙伴聊天。</h2>
+          <p class="sub">点击不同灵感，右侧会切换为不同风格的拼豆预览，模拟从提示词到图案的过程。</p>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="demo-panel">
+          <h3>选择一个创作方向</h3>
+          <p>每个方向都会生成配色倾向与像素化结构，适合继续扩展为完整图纸。</p>
+          <div class="sample-prompts">
+            <button class="active" data-pattern="fox">暖橙小狐狸头像，围巾点缀，适合新手</button>
+            <button data-pattern="flower">春日花束徽章，奶油色背景，柔和渐变</button>
+            <button data-pattern="dragon">迷你火龙挂件，红金主色，轮廓更醒目</button>
+            <button data-pattern="cat">黑白小猫杯垫，圆形构图，表情俏皮</button>
+          </div>
+        </div>
+        <div class="canvas-panel">
+          <div class="canvas-toolbar">
+            <div class="mini-dots"><i></i><i></i><i></i></div>
+            <div class="canvas-title" id="canvasTitle">Fox Pattern · 22×22 Preview</div>
+          </div>
+          <div class="large-board" id="demoBoard"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <div class="section-head">
+        <div>
+          <h2>清晰的创作闭环。</h2>
+          <p class="sub">Beads Copilot 把“想做什么”和“怎么做出来”连接起来，让初学者更快上手，也让熟练玩家更快出稿。</p>
+        </div>
+      </div>
+      <div class="workflow">
+        <article class="step">
+          <h3>输入灵感</h3>
+          <p>描述主题、尺寸、风格、用途，也可以加入参考元素与难度倾向。</p>
+        </article>
+        <article class="step">
+          <h3>生成方案</h3>
+          <p>输出像素构图、配色建议、色号组合与局部细节说明。</p>
+        </article>
+        <article class="step">
+          <h3>调整细节</h3>
+          <p>继续要求换色、变尺寸、减少颜色、增强轮廓或改成系列款。</p>
+        </article>
+        <article class="step">
+          <h3>开始制作</h3>
+          <p>查看材料清单与分步提示，按区域完成摆放、熨烫与成品整理。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="palette">
+      <div class="section-head">
+        <div>
+          <h2>灵感离不开好色彩。</h2>
+          <p class="sub">页面示例选取多组拼豆常用色，覆盖暖色、绿色、蓝色、紫粉、肤色、灰阶与中性色，方便展示不同作品风格。</p>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="swatch" style="background:#F47E38">A10</div>
+        <div class="swatch" style="background:#26B78E">B19</div>
+        <div class="swatch" style="background:#44CDFB">C4</div>
+        <div class="swatch" style="background:#B34EC6">D5</div>
+        <div class="swatch" style="background:#F9C8DB">E18</div>
+        <div class="swatch" style="background:#E10328">F5</div>
+        <div class="swatch" style="background:#FEC993">G12</div>
+        <div class="swatch" style="background:#010101">H7</div>
+        <div class="swatch" style="background:#747D7A">M15</div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="cta-content">
+        <h2>让每一个灵感都有一张可执行图纸。</h2>
+        <p>用 Beads Copilot 规划图案、挑选色号、估算用量，再把复杂创作拆成一步步可以完成的小任务。</p>
+        <a class="btn" href="#top">回到顶部</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>© 2026 Beads Copilot</span>
+    <span>Designed for playful pixel craft</span>
+  </footer>
+
+  <script>
+    const colors = {
+      empty: '#36313d',
+      orange: '#F47E38',
+      orange2: '#FEC993',
+      teal: '#21C5C4',
+      blue: '#1E334E',
+      white: '#FFFFFF',
+      black: '#010101',
+      pink: '#F9C8DB',
+      red: '#E10328',
+      green: '#26B78E',
+      yellow: '#FFD166',
+      purple: '#B34EC6',
+      gray: '#B4B4B4'
+    };
+
+    function drawBoard(el, size, pattern, palette) {
+      el.innerHTML = '';
+      el.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+      const center = (size - 1) / 2;
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const bead = document.createElement('span');
+          bead.className = 'bead';
+          bead.style.animationDelay = `${(x + y) * 0.006}s`;
+          bead.style.background = pattern(x, y, center, palette);
+          el.appendChild(bead);
+        }
+      }
+    }
+
+    const patterns = {
+      fox: {
+        title: 'Fox Pattern · 22×22 Preview',
+        palette: [colors.orange, colors.orange2, colors.teal, colors.blue, colors.white, colors.black],
+        fn: (x, y, c, p) => {
+          const dx = Math.abs(x - c), dy = Math.abs(y - c);
+          if (y < 4 && (x < 6 || x > 15)) return p[0];
+          if (dx + dy < 10) return p[0];
+          if (dx < 4 && y > 11 && y < 18) return p[1];
+          if ((x === 8 || x === 13) && y === 10) return p[5];
+          if (x > 6 && x < 15 && y === 15) return p[5];
+          if (y > 16 && dx < 8) return p[2];
+          if (dx + dy < 12) return p[4];
+          return p[3];
+        }
+      },
+      flower: {
+        title: 'Flower Badge · 22×22 Preview',
+        palette: [colors.pink, colors.yellow, colors.green, colors.white, colors.purple, colors.orange2],
+        fn: (x, y, c, p) => {
+          const dx = x - c, dy = y - c;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          const petal = Math.abs(Math.sin(Math.atan2(dy, dx) * 4)) * 5 + 3;
+          if (d < 3) return p[1];
+          if (d < petal + 4 && d > 3) return p[0];
+          if (y > 12 && Math.abs(x - c) < 2) return p[2];
+          if (y > 15 && Math.abs(x - c) < 6) return p[2];
+          if (d < 10) return p[3];
+          return p[4];
+        }
+      },
+      dragon: {
+        title: 'Mini Dragon · 22×22 Preview',
+        palette: [colors.red, colors.orange, colors.yellow, colors.black, colors.white, colors.orange2],
+        fn: (x, y, c, p) => {
+          const body = x > 5 && x < 16 && y > 6 && y < 17;
+          const head = x > 11 && x < 19 && y > 4 && y < 12;
+          const wing = (x + y > 8 && x + y < 19 && y < 10) || (x - y > 3 && x - y < 10 && y < 14);
+          if (wing) return p[1];
+          if (body || head) return (x + y) % 3 === 0 ? p[0] : p[1];
+          if ((x === 15 || x === 16) && y === 7) return p[3];
+          if (y === 4 && x > 13 && x < 18) return p[2];
+          if (y > 16 && x > 3 && x < 13) return p[5];
+          return p[3];
+        }
+      },
+      cat: {
+        title: 'Cat Coaster · 22×22 Preview',
+        palette: [colors.white, colors.black, colors.gray, colors.pink, colors.teal, colors.blue],
+        fn: (x, y, c, p) => {
+          const dx = Math.abs(x - c), dy = Math.abs(y - c);
+          if (dx * dx + dy * dy < 92) return p[0];
+          if (y < 6 && (x < 8 || x > 13)) return p[1];
+          if ((x === 8 || x === 13) && y === 10) return p[1];
+          if (x === 11 && y === 13) return p[3];
+          if (y === 15 && x > 7 && x < 15) return p[1];
+          if (dx * dx + dy * dy < 110) return p[2];
+          return p[5];
+        }
+      }
+    };
+
+    drawBoard(document.getElementById('heroBoard'), 18, patterns.fox.fn, patterns.fox.palette);
+    drawBoard(document.getElementById('demoBoard'), 22, patterns.fox.fn, patterns.fox.palette);
+
+    document.querySelectorAll('.sample-prompts button').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.sample-prompts button').forEach((b) => b.classList.remove('active'));
+        button.classList.add('active');
+        const selected = patterns[button.dataset.pattern];
+        document.getElementById('canvasTitle').textContent = selected.title;
+        drawBoard(document.getElementById('demoBoard'), 22, selected.fn, selected.palette);
+      });
+    });
+  </script>
+</body>
+</html>
